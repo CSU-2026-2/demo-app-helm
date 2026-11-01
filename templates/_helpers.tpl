@@ -50,7 +50,6 @@ Common labels
 */}}
 {{- define "demo-app.labels" -}}
 helm.sh/chart: {{ include "demo-app.chart" . }}
-sidecar.istio.io/inject: "true"
 {{ include "demo-app.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
@@ -84,22 +83,4 @@ Worker selector labels
 {{- define "demo-worker.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "demo-worker.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end -}}
-
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "demo-app.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create -}}
-{{- default (include "demo-app.fullname" .) .Values.serviceAccount.name -}}
-{{- else -}}
-{{- default "default" .Values.serviceAccount.name -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Service account name for worker resources
-*/}}
-{{- define "demo-worker.serviceAccountName" -}}
-{{- include "demo-app.serviceAccountName" . -}}
 {{- end -}}

@@ -4,88 +4,22 @@ app:
     repository: ghcr.io/csu-itmo-2025-2/demo-app
     pullPolicy: Always
     tag: "sha-c3e95ef"
-  rollout:
-    enabled: true
-    strategy: canary
-    revisionHistoryLimit: 5
-    progressDeadlineSeconds: 600
-    canary:
-      maxSurge: 1
-      maxUnavailable: 0
-      steps:
-        - setWeight: 20
-        - pause:
-            duration: 30
-        - setWeight: 50
-        - pause:
-            duration: 60
-        - setWeight: 100
-      analysis:
-        enabled: true
-        startingStep: 2
-        templateName: ""
-        args: []
-    analysisTemplate:
-      enabled: true
-      nameOverride: ""
-      prometheusAddress: http://monitoring-kube-prometheus-prometheus.monitoring:9090
-      errorRate:
-        interval: 30s
-        lookbackWindow: 5m
-        successCondition: result[0] < 0.05
-        failureCondition: result[0] >= 0.05
-  destinationRule:
-    enabled: true
-    host: ""
-    trafficPolicy:
-      connectionPool:
-        http:
-          http1MaxPendingRequests: 1
-          maxRequestsPerConnection: 1
-      outlierDetection:
-        consecutive5xxErrors: 1
-        interval: 5s
-        baseEjectionTime: 30s
-        maxEjectionPercent: 100
-  autoscaling:
-    enabled: true
-    minReplicas: 1
-    maxReplicas: 5
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
 worker:
+  replicaCount: 1
   image:
     repository: ghcr.io/csu-itmo-2025-2/demo-worker
     pullPolicy: Always
     tag: "sha-5db561a"
-  replicaCount: 2
-  autoscaling:
-    enabled: false
-    minReplicas: 2
-    maxReplicas: 5
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-  pdb:
-    enabled: true
-    minAvailable: 1
-  keda:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 5
-    pollingInterval: 10
-    cooldownPeriod: 30
-    bootstrapServers: my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
-    topic: todos-created
-    consumerGroup: todo-generator
-    lagThreshold: 5
+kafka:
+  bootstrapServers: my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
+  topic: todos-created
+secrets:
+  database: db-credentials
+  yandex: demo-openai-config
 imagePullSecrets:
   - name: ghcr-secret
 nameOverride: ""
 fullnameOverride: ""
-serviceAccount:
-  create: true
-  annotations: {}
-  name: ""
 podAnnotations: {}
 podSecurityContext: {}
 securityContext: {}
@@ -94,7 +28,7 @@ service:
   port: 80
 ingress:
   enabled: true
-  className: "nginx"
+  className: nginx
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
   hosts:
@@ -106,19 +40,6 @@ ingress:
     - hosts:
         - demo.kubepractice.ru
       secretName: tls-secret
-istioIngress:
-  enabled: true
-  hosts:
-    - demo.kubepractice-istio.ru
-  gateway:
-    name: demo-app-gateway
-  tls:
-    enabled: true
-    secretName: demo-istio-tls
-    issuerRef:
-      name: letsencrypt-istio
-      kind: ClusterIssuer
-  redirectHttpToHttps: true
 resources:
   limits:
     cpu: 250m
@@ -129,6 +50,3 @@ resources:
 nodeSelector: {}
 tolerations: []
 affinity: {}
-podAntiAffinity:
-  enabled: true
-  topologyKey: kubernetes.io/hostname

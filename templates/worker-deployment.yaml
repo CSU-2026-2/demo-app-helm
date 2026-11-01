@@ -5,9 +5,7 @@ metadata:
   labels:
     {{- include "demo-worker.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.worker.autoscaling.enabled }}
   replicas: {{ .Values.worker.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
       {{- include "demo-worker.selectorLabels" . | nindent 6 }}
@@ -24,7 +22,6 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "demo-worker.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -34,42 +31,34 @@ spec:
           image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
           env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: {{ .Values.kafka.bootstrapServers | quote }}
+            - name: KAFKA_TODO_TOPIC
+              value: {{ .Values.kafka.topic | quote }}
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
                   key: DATABASE_URL
-                  name: db-credentials
+                  name: {{ .Values.secrets.database }}
             - name: YANDEX_CLOUD_API_KEY
               valueFrom:
                 secretKeyRef:
                   key: YANDEX_CLOUD_API_KEY
-                  name: demo-openai-config
+                  name: {{ .Values.secrets.yandex }}
             - name: YANDEX_CLOUD_FOLDER
               valueFrom:
                 secretKeyRef:
                   key: YANDEX_CLOUD_FOLDER
-                  name: demo-openai-config
+                  name: {{ .Values.secrets.yandex }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if or .Values.podAntiAffinity.enabled .Values.affinity }}
+      {{- with .Values.affinity }}
       affinity:
-        {{- if .Values.podAntiAffinity.enabled }}
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/name: {{ include "demo-worker.name" . }}
-              topologyKey: {{ .Values.podAntiAffinity.topologyKey | default "kubernetes.io/hostname" }}
-        {{- end }}
-        {{- with .Values.affinity }}
         {{- toYaml . | nindent 8 }}
-        {{- end }}
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations:
