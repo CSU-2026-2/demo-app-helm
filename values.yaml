@@ -39,7 +39,7 @@ ingress:
   tls:
     - hosts:
         - demo.kubepractice.ru
-      secretName: tls-secret
+      secretName: gateway-tls
 resources:
   limits:
     cpu: 250m
