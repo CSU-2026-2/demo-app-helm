@@ -3,7 +3,7 @@ app:
   image:
     repository: ghcr.io/csu-2026-2/demo-app
     pullPolicy: Always
-    tag: "sha-de64dea"
+    tag: "sha-f9479fc"
 worker:
   replicaCount: 1
   image:
