@@ -9,7 +9,7 @@ worker:
   image:
     repository: ghcr.io/csu-2026-2/demo-worker
     pullPolicy: Always
-    tag: "sha-fa73c17"
+    tag: "sha-1e05ac5"
 kafka:
   enabled: true
   image: apache/kafka:3.9.1
