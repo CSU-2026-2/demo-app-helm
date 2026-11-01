@@ -8,7 +8,11 @@ HTTP-перенаправления нет. Nginx Ingress и отдельный 
 
 - PostgreSQL: Secret из `secrets.database` с ключом `DATABASE_URL`.
 - Вход: Secret из `secrets.auth` с ключами `AUTH_USERNAME`, `AUTH_PASSWORD`,
-  `AUTH_SESSION_SECRET` (случайная строка от 32 символов). Передаётся только API.
+  `AUTH_SESSION_SECRET` (случайная строка от 32 символов, передаётся как `JWT_SECRET_KEY`).
+  Передаётся только API. Логин и пароль используются для создания первого пользователя
+  и переноса старых задач; последующие пользователи регистрируются через интерфейс,
+  хеши паролей и сессии JWT хранятся в PostgreSQL.
+  API выполняет Alembic `upgrade head` перед запуском; worker обновляется после API.
 - Yandex Cloud: Secret из `secrets.yandex` с ключами `YANDEX_CLOUD_API_KEY`
   и `YANDEX_CLOUD_FOLDER` (только worker).
 - Общая Kafka: `kafka.bootstrapServers` и `kafka.topic`.

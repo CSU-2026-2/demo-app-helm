@@ -59,7 +59,7 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.secrets.auth }}
                   key: AUTH_PASSWORD
-            - name: AUTH_SESSION_SECRET
+            - name: JWT_SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.auth }}
