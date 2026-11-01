@@ -16,6 +16,7 @@ kafka:
 secrets:
   database: db-credentials
   yandex: demo-openai-config
+  auth: demo-auth
 imagePullSecrets:
   - name: ghcr-secret
 nameOverride: ""

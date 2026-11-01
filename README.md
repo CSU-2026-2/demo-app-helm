@@ -7,6 +7,8 @@ HTTP-перенаправления нет. Nginx Ingress и отдельный 
 ## Внешние зависимости
 
 - PostgreSQL: Secret из `secrets.database` с ключом `DATABASE_URL`.
+- Вход: Secret из `secrets.auth` с ключами `AUTH_USERNAME`, `AUTH_PASSWORD`,
+  `AUTH_SESSION_SECRET` (случайная строка от 32 символов). Передаётся только API.
 - Yandex Cloud: Secret из `secrets.yandex` с ключами `YANDEX_CLOUD_API_KEY`
   и `YANDEX_CLOUD_FOLDER` (только worker).
 - Общая Kafka: `kafka.bootstrapServers` и `kafka.topic`.

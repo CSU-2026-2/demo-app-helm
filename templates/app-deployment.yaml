@@ -49,6 +49,23 @@ spec:
             periodSeconds: 10
             failureThreshold: 3
           env:
+            - name: AUTH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.auth }}
+                  key: AUTH_USERNAME
+            - name: AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.auth }}
+                  key: AUTH_PASSWORD
+            - name: AUTH_SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.auth }}
+                  key: AUTH_SESSION_SECRET
+            - name: AUTH_COOKIE_SECURE
+              value: "true"
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: {{ required "kafka.bootstrapServers is required" .Values.kafka.bootstrapServers | quote }}
             - name: KAFKA_TODO_TOPIC
