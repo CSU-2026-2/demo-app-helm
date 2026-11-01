@@ -1,9 +1,9 @@
 replicaCount: 1
 app:
   image:
-    repository: ghcr.io/csu-itmo-2025-2/demo-app
+    repository: ghcr.io/csu-2026-2/demo-app
     pullPolicy: Always
-    tag: "sha-c3e95ef"
+    tag: "sha-fa73c17"
 worker:
   replicaCount: 1
   image:
