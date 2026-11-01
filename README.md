@@ -1,6 +1,6 @@
 # Helm-чарт По шагам
 
-Чарт создаёт Deployment API с фронтендом, Deployment worker, Kafka, Service API
+Чарт создаёт Deployment API с фронтендом, Deployment worker, Service API
 и один HTTPRoute для доступа к приложению по HTTPS через существующий Envoy Gateway.
 HTTP-перенаправления нет. Nginx Ingress и отдельный балансировщик не нужны.
 
@@ -9,12 +9,12 @@ HTTP-перенаправления нет. Nginx Ingress и отдельный 
 - PostgreSQL: Secret из `secrets.database` с ключом `DATABASE_URL`.
 - Yandex Cloud: Secret из `secrets.yandex` с ключами `YANDEX_CLOUD_API_KEY`
   и `YANDEX_CLOUD_FOLDER` (только worker).
-- Внешняя Kafka нужна только при `kafka.enabled: false`.
+- Общая Kafka: `kafka.bootstrapServers` и `kafka.topic`.
 - `imagePullSecrets` для закрытых образов GHCR.
 - Gateway `default/eg` с listener `demo-https` для
   `demo.kubepractice.ru`, допускающими маршруты из namespace `demo`.
   TLS завершается на Gateway: сертификат хранится в `default/gateway-tls`.
-- AppProject Argo CD должен разрешать HTTPRoute, StatefulSet и Job.
+- AppProject Argo CD должен разрешать Deployment, ReplicaSet, Pod, Service и HTTPRoute.
 
 Gateway и AppProject настраиваются администратором отдельно от приложения.
 В локальном инфраструктурном каталоге `../kubepractice` декларации находятся
@@ -37,23 +37,17 @@ helm template demo-app . -n demo
 ```
 
 Адреса и теги образов обновляются workflows приложения.
-## Kafka в составе проекта
+## Общая Kafka
 
-По умолчанию `kafka.enabled: true`: запускается один брокер Apache Kafka 3.9.1
-в режиме KRaft (без ZooKeeper). StatefulSet использует временный диск `emptyDir`
-размером до `kafka.storageSizeLimit` (по умолчанию 1 GiB). При перезапуске контейнера
-в том же Pod данные сохраняются, при пересоздании Pod сообщения и consumer offsets
-теряются. Это согласованная конфигурация учебного стенда; задачи остаются в PostgreSQL.
+Kafka развёрнута отдельно как Application `kafka` в Argo CD, в namespace `kafka`,
+из готового Helm-чарта CloudPirates `kafka` версии `0.2.1`.
+Манифесты инфраструктуры: `../kubepractice/kafka/`.
+В этом чарте нет брокера, диска или Job создания топика.
 
-В namespace demo для релиза demo-app адрес брокера — `demo-app-kafka:9092`.
-API и worker получают его автоматически. Брокер доступен внутри кластера
-через ClusterIP, внешний порт не открывается. Аутентификация и TLS для Kafka
-в этом учебном варианте не включены.
+API и worker используют `kafka.kafka.svc.cluster.local:9092`, топик `todos-created`.
+Адрес доступен из разных namespace Kubernetes. Внешнего порта нет.
+В учебной конфигурации включено автосоздание топиков, аутентификация и TLS отключены.
+Для других приложений используйте собственные имена топиков и consumer groups.
 
-Порядок синхронизации Argo CD: сервисы и Kafka (wave -2), создание топика
-`kafka.topic` с одной партицией и одной репликой (Sync hook, wave -1), затем
-обновление API и worker. Создание топика идемпотентно; Job удаляется после успеха.
-Автосоздание топиков включено также для восстановления после пересоздания Pod.
-
-Для внешнего брокера задайте `kafka.enabled: false` и `kafka.bootstrapServers`.
-В этом режиме брокер и Job не создаются; топик готовится на внешней стороне.
+Один брокер KRaft использует `emptyDir`: при пересоздании Pod сообщения и offsets
+теряются. Задачи и шаги приложения остаются во внешней PostgreSQL.
