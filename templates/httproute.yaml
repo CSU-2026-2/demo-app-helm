@@ -20,26 +20,4 @@ spec:
       backendRefs:
         - name: {{ include "demo-app.fullname" . }}
           port: {{ .Values.service.port }}
-{{- if .Values.httpRoute.redirectHttp }}
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: {{ include "demo-app.fullname" . }}-redirect
-  labels:
-    {{- include "demo-app.labels" . | nindent 4 }}
-spec:
-  parentRefs:
-    - name: {{ .Values.httpRoute.gateway.name }}
-      namespace: {{ .Values.httpRoute.gateway.namespace }}
-      sectionName: {{ .Values.httpRoute.gateway.httpListener }}
-  hostnames:
-    - {{ .Values.httpRoute.hostname | quote }}
-  rules:
-    - filters:
-        - type: RequestRedirect
-          requestRedirect:
-            scheme: https
-            statusCode: 301
-{{- end }}
 {{- end }}

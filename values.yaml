@@ -29,12 +29,10 @@ service:
 httpRoute:
   enabled: true
   hostname: demo.kubepractice.ru
-  redirectHttp: true
   gateway:
     name: eg
     namespace: default
     httpsListener: demo-https
-    httpListener: demo-http
 resources:
   limits:
     cpu: 250m
