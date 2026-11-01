@@ -11,8 +11,21 @@ worker:
     pullPolicy: Always
     tag: "sha-fa73c17"
 kafka:
-  bootstrapServers: my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
+  enabled: true
+  image: apache/kafka:3.9.1
+  # Used only when enabled=false.
+  bootstrapServers: ""
   topic: todos-created
+  clusterId: 4L6g3nShT-eMCtK--X86sw
+  heapOpts: -Xms256m -Xmx512m
+  storageSizeLimit: 1Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
 secrets:
   database: db-credentials
   yandex: demo-openai-config

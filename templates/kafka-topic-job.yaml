@@ -1,0 +1,42 @@
+{{- if .Values.kafka.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "demo-kafka.fullname" . }}-init
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  backoffLimit: 6
+  activeDeadlineSeconds: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: create-topic
+          image: {{ .Values.kafka.image | quote }}
+          imagePullPolicy: IfNotPresent
+          command: ["/opt/kafka/bin/kafka-topics.sh"]
+          args:
+            - --bootstrap-server
+            - {{ include "demo-kafka.bootstrapServers" . | quote }}
+            - --create
+            - --if-not-exists
+            - --topic
+            - {{ .Values.kafka.topic | quote }}
+            - --partitions
+            - "1"
+            - --replication-factor
+            - "1"
+          env:
+            - name: KAFKA_HEAP_OPTS
+              value: -Xms64m -Xmx128m
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi
+{{- end }}

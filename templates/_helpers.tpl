@@ -84,3 +84,21 @@ Worker selector labels
 app.kubernetes.io/name: {{ include "demo-worker.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
+
+{{/* Reserve room for the headless Service suffix. */}}
+{{- define "demo-kafka.fullname" -}}
+{{- printf "%s-kafka" (include "demo-app.fullname" . | trunc 48 | trimSuffix "-") -}}
+{{- end -}}
+
+{{- define "demo-kafka.selectorLabels" -}}
+app.kubernetes.io/name: {{ printf "%s-kafka" (include "demo-app.name" . | trunc 57 | trimSuffix "-") }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end -}}
+
+{{- define "demo-kafka.bootstrapServers" -}}
+{{- if .Values.kafka.enabled -}}
+{{- printf "%s:9092" (include "demo-kafka.fullname" .) -}}
+{{- else -}}
+{{- required "Set kafka.bootstrapServers when kafka.enabled=false" .Values.kafka.bootstrapServers -}}
+{{- end -}}
+{{- end -}}

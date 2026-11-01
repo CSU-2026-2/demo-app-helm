@@ -32,7 +32,7 @@ spec:
           imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
           env:
             - name: KAFKA_BOOTSTRAP_SERVERS
-              value: {{ .Values.kafka.bootstrapServers | quote }}
+              value: {{ include "demo-kafka.bootstrapServers" . | quote }}
             - name: KAFKA_TODO_TOPIC
               value: {{ .Values.kafka.topic | quote }}
             - name: DATABASE_URL
