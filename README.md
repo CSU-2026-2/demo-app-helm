@@ -1,44 +1,40 @@
-﻿# Helm-чарт По шагам
+# Helm-чарт По шагам
 
-Состав: Deployment API (также раздаёт фронтенд), Deployment worker, Service API
-и опциональный Ingress. Дополнительные CRD не нужны.
-
-Убраны Argo Rollouts, канареечные этапы, AnalysisTemplate, Istio Gateway,
-VirtualService, DestinationRule, HPA, KEDA, PDB, outbox и отдельный ServiceAccount.
-Для каждого компонента задаётся фиксированное число реплик. API использует
-обычное rolling update Kubernetes. Селекторы API и worker сохранены раздельными.
+Чарт создаёт Deployment API с фронтендом, Deployment worker, Service API
+и два HTTPRoute для существующего Envoy Gateway: HTTPS к приложению
+и перенаправление HTTP на HTTPS. Nginx Ingress и отдельный балансировщик не нужны.
 
 ## Внешние зависимости
 
 - PostgreSQL: Secret из `secrets.database` с ключом `DATABASE_URL`.
 - Yandex Cloud: Secret из `secrets.yandex` с ключами `YANDEX_CLOUD_API_KEY`
   и `YANDEX_CLOUD_FOLDER` (только worker).
-- Kafka и заранее созданный топик: `kafka.bootstrapServers` и `kafka.topic`.
-  Одинаковые настройки передаются API и worker.
-- Ingress-контроллер и TLS Secret, если включён Ingress.
-- `imagePullSecrets` для GHCR, если образы закрыты.
+- Kafka с заранее созданным топиком: `kafka.bootstrapServers`, `kafka.topic`.
+- `imagePullSecrets` для закрытых образов GHCR.
+- Gateway `default/eg` с listeners `demo-https` и `demo-http` для
+  `demo.kubepractice.ru`, допускающими маршруты из namespace `demo`.
+  TLS завершается на Gateway: сертификат хранится в `default/gateway-tls`.
+- AppProject Argo CD должен разрешать `gateway.networking.k8s.io/HTTPRoute`.
 
-Интерфейс доступен на `/` через Service/Ingress API.
-Отдельного образа или домена для фронтенда нет.
+Gateway и AppProject настраиваются администратором отдельно от приложения.
+В локальном инфраструктурном каталоге `../kubepractice` декларации находятся
+в `envoy-gateway/https.yaml` и `argocd/demo-app-project.yaml`.
 
-## Проверка и установка
+## Настройки маршрута
+
+`httpRoute.hostname` задаёт домен. `httpRoute.gateway` содержит имя, namespace
+и имена HTTP/HTTPS listeners. Домен должен соответствовать listener и сертификату.
+`httpRoute.redirectHttp: false` отключает HTTP-перенаправление;
+`httpRoute.enabled: false` отключает оба маршрута.
+
+Интерфейс доступен по https://demo.kubepractice.ru/ через существующий Service.
+Отдельного образа, TLS-секрета в namespace demo или домена для фронтенда нет.
+
+## Проверка
 
 ```sh
 helm lint .
-helm template demo .
-helm upgrade --install demo . -n demo --create-namespace
+helm template demo-app . -n demo
 ```
 
-Адреса и теги образов в `values.yaml` обновляются workflows приложения.
-Перед ручной установкой укажите уже опубликованные совместимые образы.
-
-## Обновление предыдущей версии
-
-Чарт 0.2.0 заменяет Rollout обычным Deployment и оставляет только Nginx Ingress.
-Старый адрес Istio больше не обслуживается этим чартом.
-При GitOps-обновлении требуется удаление ресурсов, убранных из шаблонов (prune).
-Без него старые Rollout, HPA, ScaledObject и маршруты Istio останутся в кластере.
-Сначала проверьте `helm template`/diff в целевом окружении. Изменение файлов
-не применяет чарт и не удаляет работающие ресурсы.
-Старые секции values для rollout, autoscaling, keda, istioIngress и outbox удалены;
-передавайте актуальный values вместо `--reuse-values`.
+Адреса и теги образов обновляются workflows приложения.

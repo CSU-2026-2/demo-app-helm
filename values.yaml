@@ -26,20 +26,15 @@ securityContext: {}
 service:
   type: ClusterIP
   port: 80
-ingress:
+httpRoute:
   enabled: true
-  className: nginx
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-  hosts:
-    - host: demo.kubepractice.ru
-      paths:
-        - path: /
-          pathType: Prefix
-  tls:
-    - hosts:
-        - demo.kubepractice.ru
-      secretName: gateway-tls
+  hostname: demo.kubepractice.ru
+  redirectHttp: true
+  gateway:
+    name: eg
+    namespace: default
+    httpsListener: demo-https
+    httpListener: demo-http
 resources:
   limits:
     cpu: 250m
