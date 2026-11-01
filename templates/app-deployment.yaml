@@ -50,7 +50,7 @@ spec:
             failureThreshold: 3
           env:
             - name: KAFKA_BOOTSTRAP_SERVERS
-              value: {{ include "demo-kafka.bootstrapServers" . | quote }}
+              value: {{ required "kafka.bootstrapServers is required" .Values.kafka.bootstrapServers | quote }}
             - name: KAFKA_TODO_TOPIC
               value: {{ .Values.kafka.topic | quote }}
             - name: DATABASE_URL

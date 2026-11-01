@@ -13,8 +13,8 @@ worker:
 kafka:
   enabled: true
   image: apache/kafka:3.9.1
-  # Used only when enabled=false.
-  bootstrapServers: ""
+  # API publishes to the shared broker while the old worker drains its queue.
+  bootstrapServers: "kafka.kafka.svc.cluster.local:9092"
   topic: todos-created
   clusterId: 4L6g3nShT-eMCtK--X86sw
   heapOpts: -Xms256m -Xmx512m
