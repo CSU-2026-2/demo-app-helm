@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "demo-app.labels" . | nindent 4 }}
 spec:
+  revisionHistoryLimit: 2
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:

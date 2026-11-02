@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "demo-worker.labels" . | nindent 4 }}
 spec:
+  revisionHistoryLimit: 2
   replicas: {{ .Values.worker.replicaCount }}
   selector:
     matchLabels:
