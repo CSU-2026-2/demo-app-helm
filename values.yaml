@@ -9,7 +9,7 @@ worker:
   image:
     repository: ghcr.io/csu-2026-2/demo-worker
     pullPolicy: Always
-    tag: "sha-1e05ac5"
+    tag: "sha-961d82e"
 kafka:
   bootstrapServers: "kafka.kafka.svc.cluster.local:9092"
   topic: todos-created
