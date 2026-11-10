@@ -76,6 +76,11 @@ spec:
                 secretKeyRef:
                   key: DATABASE_URL
                   name: {{ .Values.secrets.database }}
+            - name: HEALTH_STATUS_ENV
+              valueFrom:
+                secretKeyRef:
+                  key: HEALTH_STATUS_ENV
+                  name: health-secret
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
