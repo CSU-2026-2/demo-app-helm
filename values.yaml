@@ -12,6 +12,7 @@ worker:
     tag: "sha-961d82e"
 kafka:
   bootstrapServers: "kafka.kafka.svc.cluster.local:9092"
+  producerBootstrapServers: "shared-kafka-bootstrap.kafka.svc.cluster.local:9092"
   topic: todos-created
 secrets:
   database: db-credentials
