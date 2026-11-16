@@ -45,15 +45,18 @@ helm template demo-app . -n demo
 Адреса и теги образов обновляются workflows приложения.
 ## Общая Kafka
 
-Kafka развёрнута отдельно как Application `kafka` в Argo CD, в namespace `kafka`,
-из готового Helm-чарта CloudPirates `kafka` версии `0.2.1`.
-Манифесты инфраструктуры: `../kubepractice/kafka/`.
+Kafka развёрнута отдельно как Application `kafka-cluster` в Argo CD, в namespace `kafka`.
+Strimzi Operator 1.3.1 управляет тремя узлами Kafka 4.3.2 controller/broker.
+Манифесты кластера: `infrastructure/kafka/`; bootstrap Applications оператора и Kafbat:
+`../kubepractice/kafka/`.
 В этом чарте нет брокера, диска или Job создания топика.
 
-API и worker используют `kafka.kafka.svc.cluster.local:9092`, топик `todos-created`.
+API и worker используют `shared-kafka-bootstrap.kafka.svc.cluster.local:9092`, топик `todos-created`.
+Старый DNS `kafka.kafka.svc.cluster.local:9092` сохранён как алиас.
 Адрес доступен из разных namespace Kubernetes. Внешнего порта нет.
 В учебной конфигурации включено автосоздание топиков, аутентификация и TLS отключены.
 Для других приложений используйте собственные имена топиков и consumer groups.
 
-Один брокер KRaft использует `emptyDir`: при пересоздании Pod сообщения и offsets
-теряются. Задачи и шаги приложения остаются во внешней PostgreSQL.
+Каждый брокер размещён на отдельной ноде с постоянным локальным томом 10Gi.
+Топик имеет три реплики и `min.insync.replicas=2`. UI: https://kafka.kubepractice.ru.
+Задачи и шаги приложения остаются во внешней PostgreSQL.

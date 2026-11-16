@@ -7,6 +7,7 @@ their bootstrap declarations are in `../kubepractice/kafka/` outside this reposi
 - Kafka 4.3.2; Strimzi operator 1.3.1.
 - Three combined controller/broker nodes, one per Kubernetes worker.
 - Bootstrap: `shared-kafka-bootstrap.kafka.svc.cluster.local:9092`.
+- Compatibility bootstrap alias: `kafka.kafka.svc.cluster.local:9092` (ExternalName Service).
 - Internal PLAINTEXT listener accessible across namespaces; no external broker port.
 - Topic `todos-created`: one partition, replication factor 3, minimum ISR 2.
 - Default replication factor 3 and minimum ISR 2 for newly created topics.
